@@ -14,7 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      capturas: {
+        Row: {
+          created_at: string | null
+          especie_peixe: string
+          id: number
+          image_url: string | null
+          is_public: boolean | null
+          isca_utilizada: string | null
+          localizacao: string | null
+          observacoes: string | null
+          peso_kg: number | null
+          tamanho_cm: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          especie_peixe: string
+          id?: number
+          image_url?: string | null
+          is_public?: boolean | null
+          isca_utilizada?: string | null
+          localizacao?: string | null
+          observacoes?: string | null
+          peso_kg?: number | null
+          tamanho_cm?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          especie_peixe?: string
+          id?: number
+          image_url?: string | null
+          is_public?: boolean | null
+          isca_utilizada?: string | null
+          localizacao?: string | null
+          observacoes?: string | null
+          peso_kg?: number | null
+          tamanho_cm?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capturas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perfis: {
+        Row: {
+          created_at: string | null
+          id: string
+          localizacao_padrao: string | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          localizacao_padrao?: string | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          localizacao_padrao?: string | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
