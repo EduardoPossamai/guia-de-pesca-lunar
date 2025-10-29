@@ -115,10 +115,10 @@ const Index = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-lg font-semibold text-foreground">
-                          {astronomyData.astronomy.astro.moon_phase}
+                          {astronomyData?.astronomy?.astro?.moon_phase ?? 'Dados indisponíveis'}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Iluminação: {astronomyData.astronomy.astro.moon_illumination}%
+                          Iluminação: {astronomyData?.astronomy?.astro?.moon_illumination ?? '—'}%
                         </p>
                       </CardContent>
                     </Card>
@@ -131,9 +131,9 @@ const Index = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-lg font-semibold text-accent">
-                          {getFishingForecast(astronomyData.astronomy.astro.moon_phase)}
-                        </p>
+                         <p className="text-lg font-semibold text-accent">
+                           {getFishingForecast(astronomyData?.astronomy?.astro?.moon_phase || '')}
+                         </p>
                       </CardContent>
                     </Card>
 
@@ -145,9 +145,9 @@ const Index = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-lg font-semibold text-foreground">
-                          {astronomyData.astronomy.astro.moonrise}
-                        </p>
+                         <p className="text-lg font-semibold text-foreground">
+                           {astronomyData?.astronomy?.astro?.moonrise ?? '—'}
+                         </p>
                       </CardContent>
                     </Card>
 
@@ -159,9 +159,9 @@ const Index = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-lg font-semibold text-foreground">
-                          {astronomyData.astronomy.astro.moonset}
-                        </p>
+                         <p className="text-lg font-semibold text-foreground">
+                           {astronomyData?.astronomy?.astro?.moonset ?? '—'}
+                         </p>
                       </CardContent>
                     </Card>
 
