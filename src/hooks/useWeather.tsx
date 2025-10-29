@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 
 const API_KEY = 'ca6aed2cd4614567872235713252810';
 
+interface AstronomyData {
+  astronomy: {
+    astro: {
+      moon_phase: string;
+      moon_illumination: string;
+      moonrise: string;
+      moonset: string;
+    };
+  };
+  location: {
+    name: string;
+    region: string;
+    country: string;
+  };
+}
+
 interface WeatherData {
   current: {
     temp_c: number;
@@ -32,15 +48,18 @@ interface WeatherData {
 
 interface UseWeatherReturn {
   weatherData: WeatherData | null;
+  astronomyData: AstronomyData | null;
   loading: boolean;
   error: string | null;
   fetchWeatherByCity: (city: string) => Promise<void>;
   fetchWeatherByDate: (location: string, date: Date) => Promise<void>;
+  fetchAstronomyByDate: (location: string, date: Date) => Promise<void>;
   locationDenied: boolean;
 }
 
 export function useWeather(): UseWeatherReturn {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [astronomyData, setAstronomyData] = useState<AstronomyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
@@ -98,6 +117,52 @@ export function useWeather(): UseWeatherReturn {
     }
   };
 
+  const fetchAstronomyByDate = async (location: string, date: Date) => {
+    setLoading(true);
+    setError(null);
+    
+    const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    
+    try {
+      // PRIORIDADE 1: Buscar dados de astronomia (sempre funciona)
+      const astronomyResponse = await fetch(
+        `https://api.weatherapi.com/v1/astronomy.json?key=${API_KEY}&q=${location}&dt=${dateStr}`
+      );
+      
+      if (!astronomyResponse.ok) {
+        throw new Error('Dados astronômicos não disponíveis');
+      }
+      
+      const astronomyDataResponse = await astronomyResponse.json();
+      setAstronomyData(astronomyDataResponse);
+      
+      // PRIORIDADE 2: Tentar buscar dados do tempo (pode falhar silenciosamente)
+      try {
+        const weatherResponse = await fetch(
+          `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&dt=${dateStr}&days=1&aqi=no&alerts=no&lang=pt`
+        );
+        
+        if (weatherResponse.ok) {
+          const weatherDataResponse = await weatherResponse.json();
+          setWeatherData(weatherDataResponse);
+        } else {
+          // Se falhar, limpar dados do tempo mas manter astronomia
+          setWeatherData(null);
+        }
+      } catch {
+        // Ignorar erro silenciosamente - dados de astronomia já estão disponíveis
+        setWeatherData(null);
+      }
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar dados');
+      setAstronomyData(null);
+      setWeatherData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Tentar obter localização do usuário
     if (navigator.geolocation) {
@@ -124,10 +189,12 @@ export function useWeather(): UseWeatherReturn {
 
   return {
     weatherData,
+    astronomyData,
     loading,
     error,
     fetchWeatherByCity,
     fetchWeatherByDate,
+    fetchAstronomyByDate,
     locationDenied,
   };
 }

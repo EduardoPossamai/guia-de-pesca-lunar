@@ -12,17 +12,17 @@ import { ptBR } from "date-fns/locale";
 
 const Index = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const { weatherData, loading, error, fetchWeatherByDate } = useWeather();
+  const { weatherData, astronomyData, loading, error, fetchAstronomyByDate } = useWeather();
 
   useEffect(() => {
     if (date && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          fetchWeatherByDate(`${latitude},${longitude}`, date);
+          fetchAstronomyByDate(`${latitude},${longitude}`, date);
         },
         () => {
-          fetchWeatherByDate('Sao Paulo', date);
+          fetchAstronomyByDate('Sao Paulo', date);
         }
       );
     }
@@ -104,7 +104,7 @@ const Index = () => {
                   <div className="text-center text-sm text-destructive">
                     {error}
                   </div>
-                ) : weatherData?.forecast?.forecastday?.[0] ? (
+                ) : astronomyData ? (
                   <div className="grid gap-4 md:grid-cols-2">
                     <Card className="border-border/40 bg-background/50">
                       <CardHeader className="pb-3">
@@ -115,10 +115,10 @@ const Index = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-lg font-semibold text-foreground">
-                          {weatherData.forecast.forecastday[0].astro.moon_phase}
+                          {astronomyData.astronomy.astro.moon_phase}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Iluminação: {weatherData.forecast.forecastday[0].astro.moon_illumination}%
+                          Iluminação: {astronomyData.astronomy.astro.moon_illumination}%
                         </p>
                       </CardContent>
                     </Card>
@@ -132,7 +132,7 @@ const Index = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-lg font-semibold text-accent">
-                          {getFishingForecast(weatherData.forecast.forecastday[0].astro.moon_phase)}
+                          {getFishingForecast(astronomyData.astronomy.astro.moon_phase)}
                         </p>
                       </CardContent>
                     </Card>
@@ -146,7 +146,7 @@ const Index = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-lg font-semibold text-foreground">
-                          {weatherData.forecast.forecastday[0].astro.moonrise}
+                          {astronomyData.astronomy.astro.moonrise}
                         </p>
                       </CardContent>
                     </Card>
@@ -160,10 +160,43 @@ const Index = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-lg font-semibold text-foreground">
-                          {weatherData.forecast.forecastday[0].astro.moonset}
+                          {astronomyData.astronomy.astro.moonset}
                         </p>
                       </CardContent>
                     </Card>
+
+                    {weatherData?.current && (
+                      <>
+                        <Card className="border-border/40 bg-background/50">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              🌡️ Temperatura
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-lg font-semibold text-foreground">
+                              {weatherData.current.temp_c}°C
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {weatherData.current.condition.text}
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="border-border/40 bg-background/50">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              💨 Vento
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-lg font-semibold text-foreground">
+                              {weatherData.current.wind_kph} km/h
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
                   </div>
                 ) : null}
               </CardContent>
