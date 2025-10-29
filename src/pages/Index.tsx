@@ -3,11 +3,37 @@ import { MoonPhase } from "@/components/MoonPhase";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
-import { Waves } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Waves, Moon, Sunrise, Sunset, Fish } from "lucide-react";
+import { useWeather } from "@/hooks/useWeather";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Index = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const { weatherData, loading, error, fetchWeatherByDate } = useWeather();
+
+  useEffect(() => {
+    if (date && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeatherByDate(`${latitude},${longitude}`, date);
+        },
+        () => {
+          fetchWeatherByDate('Sao Paulo', date);
+        }
+      );
+    }
+  }, [date]);
+
+  const getFishingForecast = (moonPhase: string) => {
+    const excellentPhases = ['New Moon', 'Full Moon', 'Lua Nova', 'Lua Cheia'];
+    return excellentPhases.some(phase => moonPhase.includes(phase))
+      ? 'Excelente para Pesca'
+      : 'Regular';
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,6 +82,93 @@ const Index = () => {
               />
             </CardContent>
           </Card>
+
+          {/* Detailed Forecast Card */}
+          {date && (
+            <Card className="mt-6 border-primary/20 bg-card/50 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-xl">
+                  Previsão para {format(date, "d 'de' MMMM", { locale: ptBR })}
+                </CardTitle>
+                <CardDescription>
+                  Detalhes da fase lunar e condições de pesca
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ) : error ? (
+                  <div className="text-center text-sm text-destructive">
+                    {error}
+                  </div>
+                ) : weatherData ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Card className="border-border/40 bg-background/50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Moon className="h-5 w-5 text-primary" />
+                          Fase da Lua
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold text-foreground">
+                          {weatherData.forecast.forecastday[0].astro.moon_phase}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Iluminação: {weatherData.forecast.forecastday[0].astro.moon_illumination}%
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border/40 bg-background/50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Fish className="h-5 w-5 text-accent" />
+                          Previsão de Pesca
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold text-accent">
+                          {getFishingForecast(weatherData.forecast.forecastday[0].astro.moon_phase)}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border/40 bg-background/50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Sunrise className="h-5 w-5 text-primary" />
+                          Nascer da Lua
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold text-foreground">
+                          {weatherData.forecast.forecastday[0].astro.moonrise}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border/40 bg-background/50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Sunset className="h-5 w-5 text-primary" />
+                          Pôr da Lua
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold text-foreground">
+                          {weatherData.forecast.forecastday[0].astro.moonset}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
 

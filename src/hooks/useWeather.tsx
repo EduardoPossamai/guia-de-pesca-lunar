@@ -18,6 +18,8 @@ interface WeatherData {
       astro: {
         moon_phase: string;
         moon_illumination: string;
+        moonrise: string;
+        moonset: string;
       };
     }>;
   };
@@ -33,6 +35,7 @@ interface UseWeatherReturn {
   loading: boolean;
   error: string | null;
   fetchWeatherByCity: (city: string) => Promise<void>;
+  fetchWeatherByDate: (location: string, date: Date) => Promise<void>;
   locationDenied: boolean;
 }
 
@@ -70,6 +73,31 @@ export function useWeather(): UseWeatherReturn {
     await fetchWeather(city);
   };
 
+  const fetchWeatherByDate = async (location: string, date: Date) => {
+    setLoading(true);
+    setError(null);
+    
+    const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    
+    try {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location}&dt=${dateStr}&days=1&aqi=no&alerts=no&lang=pt`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Dados não disponíveis para esta data');
+      }
+      
+      const data = await response.json();
+      setWeatherData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar previsão');
+      setWeatherData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Tentar obter localização do usuário
     if (navigator.geolocation) {
@@ -99,6 +127,7 @@ export function useWeather(): UseWeatherReturn {
     loading,
     error,
     fetchWeatherByCity,
+    fetchWeatherByDate,
     locationDenied,
   };
 }
