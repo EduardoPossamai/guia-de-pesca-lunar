@@ -104,7 +104,7 @@ const Index = () => {
                   <div className="text-center text-sm text-destructive">
                     {error}
                   </div>
-                ) : weatherData ? (
+                ) : weatherData?.forecast?.forecastday?.[0] ? (
                   <div className="grid gap-4 md:grid-cols-2">
                     <Card className="border-border/40 bg-background/50">
                       <CardHeader className="pb-3">
